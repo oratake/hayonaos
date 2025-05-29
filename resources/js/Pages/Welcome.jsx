@@ -33,16 +33,19 @@ export default function Welcome({ auth }) {
                 </header>
 
                 <main className='flex flex-grow'>
-                    <div className="flex-grow px-2 py-10">
-                        <h1 className="font-title text-center text-[clamp(1.5rem,3.5vw,4rem)] leading-[1.1] [word-break:auto-phrase] xl:w-[115%] xl:text-start [:root[dir=rtl]_&]:leading-[1.35]">
-                            <div className='font-thin [&:last-line]:font-black'>
-                            はよなおしーや。<br />
-                            Hayonaos.
+                    <div className="hero bg-base-200">
+                        <div className="hero-content text-center">
+                            <div className="max-w-md">
+                                <div className="py-12 text-7xl">
+                                    📦
+                                </div>
+                                <h1 className="text-5xl font-bold">
+                                    <span className="font-thin">はよなおしーや。</span>
+                                    Hayonaos.
+                                </h1>
+                                <p className="py-6 font-thin">だるい片付けのおともにいかがですか？</p>
                             </div>
-                        </h1>
-                        <p className="text-base-content/70 font-title text-center py-4 font-light [text-wrap:balance] md:text-lg xl:text-2xl">
-                            だるい片付けのおともにいかがですか？
-                        </p>
+                        </div>
                     </div>
                 </main>
 
