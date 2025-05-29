@@ -11,7 +11,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Jetstream\HasTeams;
 use Laravel\Sanctum\HasApiTokens;
-use App\Models\Locations;
+use App\Models\Box;
 
 class User extends Authenticatable
 {
@@ -70,10 +70,10 @@ class User extends Authenticatable
     }
 
     /**
-     * Get the locations associated with the user.
+     * Get the boxes associated with the user.
      */
-    public function locations(): HasMany
+    public function boxes(): HasMany
     {
-        return $this->hasMany(Locations::class);
+        return $this->hasMany(Box::class);
     }
 }

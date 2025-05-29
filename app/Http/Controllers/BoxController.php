@@ -15,8 +15,7 @@ class BoxController extends Controller
     public function index(): Response
     {
         // ログインしているユーザーに紐づくBoxを取得
-        // Userモデルに boxes() リレーションが定義されている前提
-        $boxes = auth()->user()->locations()->latest()->get();
+        $boxes = auth()->user()->boxes()->latest()->get();
 
         return Inertia::render('Boxes/BoxesList', ['boxes' => $boxes]);
     }
@@ -42,7 +41,7 @@ class BoxController extends Controller
         // ログインユーザーのBoxとして作成
         // Userモデルに boxes() リレーションが定義され、
         // Boxモデルの $fillable に name と description が設定されている前提
-        $request->user()->locations()->create($validated);
+        $request->user()->boxes()->create($validated);
 
         return redirect()->route('boxes.index')->with('success', 'BOXが作成されました。');
     }

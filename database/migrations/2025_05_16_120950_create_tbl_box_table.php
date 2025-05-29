@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('tbl_locations', function (Blueprint $table) {
+        Schema::create('tbl_box', function (Blueprint $table) {
             $table->id('id');
             $table->uuid('uuid')->unique();
             $table->unsignedBigInteger('user_id');
@@ -28,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('tbl_locations');
+        Schema::dropIfExists('tbl_box');
     }
 };

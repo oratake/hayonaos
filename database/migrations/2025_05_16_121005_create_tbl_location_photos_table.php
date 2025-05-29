@@ -11,12 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('tbl_location_photos', function (Blueprint $table) {
+        Schema::create('tbl_box_photos', function (Blueprint $table) {
             $table->id('id');
             $table->uuid('uuid')->unique();
-            $table->unsignedBigInteger('location_id');
-            $table->foreign('location_id')->references('id')->on('tbl_locations');
+            $table->unsignedBigInteger('box_id');
+            $table->foreign('box_id')->references('id')->on('tbl_box');
             $table->string('photo_url')->nullable();
+            $table->string('description')->nullable();
             $table->timestamps();
         });
     }
@@ -26,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('tbl_location_photos');
+        Schema::dropIfExists('tbl_box_photos');
     }
 };

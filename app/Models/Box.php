@@ -2,12 +2,16 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
-class Locations extends Model
+class Box extends Model
 {
-    protected $table = 'tbl_locations';
+    use HasFactory;
+
+    protected $table = 'tbl_box';
 
     protected $fillable = [
         'user_id',
@@ -17,9 +21,7 @@ class Locations extends Model
     ];
 
     /**
-     * モデルの起動メソッド
-     *
-     * @return void
+     * モデルの起動メソッド (UUID生成)
      */
     protected static function boot()
     {
@@ -31,8 +33,11 @@ class Locations extends Model
         });
     }
 
-    public function photos()
+    /**
+     * このBOXに紐づく写真を取得
+     */
+    public function photos(): HasMany
     {
-        return $this->hasMany(LocationPhotos::class, 'location_id', 'id');
+        return $this->hasMany(BoxPhoto::class);
     }
 }
