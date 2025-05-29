@@ -22,6 +22,12 @@ Route::get('/dashboard', function () {
 Route::get('/boxes', [BoxController::class, 'index'])->middleware(['auth', 'verified'])->name('boxes.index');
 
 Route::middleware('auth')->group(function () {
+    // Box routes
+    Route::get('/boxes', [BoxController::class, 'index'])->name('boxes.index');
+    Route::get('/boxes/create', [BoxController::class, 'create'])->name('boxes.create');
+    Route::post('/boxes', [BoxController::class, 'store'])->name('boxes.store');
+    // TODO: Route::get('/boxes/{box}', [BoxController::class, 'show'])->name('boxes.show');
+
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
