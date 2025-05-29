@@ -2,6 +2,7 @@ import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
+import { Link } from '@inertiajs/react';
 import TextareaInput from '@/Components/TextareaInput';
 
 export default function BoxForm({ data, setData, errors, processing, onSubmit, submitButtonText = "保存する", isFocused = true }) {

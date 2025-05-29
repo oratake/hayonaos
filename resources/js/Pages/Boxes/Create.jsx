@@ -1,6 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm } from '@inertiajs/react';
-import BoxForm from '@/Components/BoxForm'; // BoxFormをインポート
+import BoxForm from '@/Components/BoxForm';
 
 
 export default function Create({ auth }) {
