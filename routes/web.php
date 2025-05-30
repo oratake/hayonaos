@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\BoxController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -19,6 +20,15 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
+    // Box routes
+    Route::get('/boxes', [BoxController::class, 'index'])->name('boxes.index');
+    Route::get('/boxes/create', [BoxController::class, 'create'])->name('boxes.create');
+    Route::post('/boxes', [BoxController::class, 'store'])->name('boxes.store');
+    Route::get('/boxes/{box}/edit', [BoxController::class, 'edit'])->name('boxes.edit');
+    Route::put('/boxes/{box}', [BoxController::class, 'update'])->name('boxes.update');
+    Route::delete('/boxes/{box}', [BoxController::class, 'destroy'])->name('boxes.destroy');
+    Route::get('/boxes/{box}', [BoxController::class, 'show'])->name('boxes.show');
+
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
