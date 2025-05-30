@@ -21,7 +21,7 @@ export default function Edit({ auth, box }) {
         e.preventDefault();
         // Use 'post' for multipart/form-data with _method: 'PUT'
         // The 'data' object already contains all necessary fields including new_photos, photos_to_delete etc.
-        post(route('boxes.update', box.id), {
+        post(route('boxes.update', box.uuid), {
             // preserveState: true, // Consider if you want to preserve state on validation errors
         });
     };

@@ -10,9 +10,17 @@ export default function Show({ auth, box }) {
                     <h2 className="font-semibold text-xl text-gray-800 leading-tight">
                         BOX詳細: {box.name}
                     </h2>
-                    <Link href={route('boxes.index')} className="btn btn-sm btn-outline">
-                        一覧へ戻る
-                    </Link>
+                    <div className="flex items-center gap-2">
+                        <Link
+                            href={route('boxes.edit', box.uuid)}
+                            className="btn btn-sm btn-info" // DaisyUIのinfoボタンスタイルを適用
+                        >
+                            編集
+                        </Link>
+                        <Link href={route('boxes.index')} className="btn btn-sm btn-outline">
+                            一覧へ戻る
+                        </Link>
+                    </div>
                 </div>
             }
         >
@@ -22,14 +30,6 @@ export default function Show({ auth, box }) {
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
                     <div className="bg-base-100 shadow-sm sm:rounded-lg">
                         <div className="p-6 space-y-4">
-                            <div>
-                                <h3 className="text-lg font-medium text-gray-900">ID</h3>
-                                <p className="mt-1 text-sm text-gray-600">{box.id}</p>
-                            </div>
-                            <div>
-                                <h3 className="text-lg font-medium text-gray-900">UUID</h3>
-                                <p className="mt-1 text-sm text-gray-600">{box.uuid}</p>
-                            </div>
                             <div>
                                 <h3 className="text-lg font-medium text-gray-900">BOX名</h3>
                                 <p className="mt-1 text-sm text-gray-600">{box.name}</p>

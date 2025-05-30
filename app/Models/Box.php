@@ -40,4 +40,14 @@ class Box extends Model
     {
         return $this->hasMany(BoxPhoto::class);
     }
+
+    /**
+     * ルートキー名の取得
+     * ルートモデルバインディングで 'uuid' カラムを使用するようにする
+     * @return string
+     */
+    public function getRouteKeyName()
+    {
+        return 'uuid';
+    }
 }
