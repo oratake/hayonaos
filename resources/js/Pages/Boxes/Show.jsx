@@ -1,7 +1,10 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
+import { QRCodeCanvas } from 'qrcode.react'; // QRCodeCanvasコンポーネントをインポート
 
 export default function Show({ auth, box }) {
+    const { url } = usePage(); // 現在のページのURLを取得
+
     return (
         <AuthenticatedLayout
             user={auth.user}
@@ -39,8 +42,21 @@ export default function Show({ auth, box }) {
                                 <p className="mt-1 text-sm text-gray-600 whitespace-pre-wrap">{box.description || 'N/A'}</p>
                             </div>
                             <div>
-                                <h3 className="text-lg font-medium text-gray-900">QRコードURL</h3>
-                                <p className="mt-1 text-sm text-gray-600">{box.qr_code_url || 'N/A'}</p>
+                                <h3 className="text-lg font-medium text-gray-900">BOXのURL</h3>
+                                <Link href={url} className="mt-1 text-sm text-blue-600 hover:text-blue-800 break-all">
+                                    {url}
+                                </Link>
+                                {/* QRコードの表示 */}
+                                <div className="mt-4">
+                                    <QRCodeCanvas // SVGからCanvasに変更
+                                        value={url} // QRコードにするURL
+                                        size={64} // QRコードのサイズ (ピクセル)
+                                        bgColor={"#ffffff"} // 背景色
+                                        fgColor={"#000000"} // 前景色
+                                        level={"L"} // 誤り訂正レベル (L, M, Q, H)
+                                        includeMargin={false} // マージンを含めるか
+                                    />
+                                </div>
                             </div>
                             <div>
                                 <h3 className="text-lg font-medium text-gray-900">作成日時</h3>
