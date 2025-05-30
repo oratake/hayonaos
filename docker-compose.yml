@@ -14,6 +14,7 @@ services:
             - 'sail-nginx:/etc/nginx/certs'
             - './vendor/ryoluo/sail-ssl/nginx/templates:/etc/nginx/templates'
             - './vendor/ryoluo/sail-ssl/nginx/generate-ssl-cert.sh:/docker-entrypoint.d/99-generate-ssl-cert.sh'
+            - './docker/nginx/conf.d/custom-nginx.conf:/etc/nginx/conf.d/custom-nginx.conf'
         depends_on:
             - ${APP_SERVICE:-laravel.test}
         networks:
