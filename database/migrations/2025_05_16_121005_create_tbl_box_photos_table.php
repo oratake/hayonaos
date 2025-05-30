@@ -16,8 +16,8 @@ return new class extends Migration
             $table->uuid('uuid')->unique();
             $table->unsignedBigInteger('box_id');
             $table->foreign('box_id')->references('id')->on('tbl_box');
-            $table->string('photo_url')->nullable();
-            $table->string('description')->nullable();
+            $table->string('file_path')->nullable();
+            $table->string('caption')->nullable();
             $table->timestamps();
         });
     }

@@ -50,7 +50,21 @@ export default function Show({ auth, box }) {
                                 <h3 className="text-lg font-medium text-gray-900">更新日時</h3>
                                 <p className="mt-1 text-sm text-gray-600">{new Date(box.updated_at).toLocaleString()}</p>
                             </div>
-                            {/* TODO: 写真一覧などを表示する場合はここに追加 */}
+                            {box.photos && box.photos.length > 0 && (
+                                <div className="mt-6">
+                                    <h3 className="text-lg font-medium text-gray-900 mb-2">写真一覧</h3>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                                        {box.photos.map((photo) => (
+                                            <div key={photo.id} className="border rounded-lg shadow-sm p-2">
+                                                <img src={photo.photo_url_public} alt={photo.caption || `写真 ${photo.id}`} className="w-full h-48 object-cover rounded-md mb-2" />
+                                                {photo.caption && (
+                                                    <p className="text-sm text-gray-600">{photo.caption}</p>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

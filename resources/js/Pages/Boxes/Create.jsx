@@ -7,6 +7,9 @@ export default function Create({ auth }) {
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
         description: '',
+        qr_code_url: '',
+        new_photos: [],
+        new_photo_captions: [],
     });
 
     const submit = (e) => {
