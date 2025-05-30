@@ -36,40 +36,50 @@ export default function BoxesList({ auth, boxes }) {
                             <table className="table table-zebra w-full">
                                 <thead>
                                     <tr>
-                                        <th>ID</th>
+                                        <th className="w-20">画像</th> {/* 画像カラムの幅を少し指定 */}
                                         <th>名前</th>
                                         <th>説明</th>
+                                        <th>更新日時</th>
                                         <th>操作</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {boxes.map((box) => (
                                         <tr
-                                            key={box.id}
-                                            onClick={() => handleRowClick(box.id)}
+                                            key={box.uuid}
+                                            onClick={() => handleRowClick(box.uuid)}
                                             className="hover" // Removed cursor-pointer from entire row if edit button is preferred
                                         >
-                                            <td>{box.id}</td>
+                                            <td>
+                                                {box.first_photo_url_public ? (
+                                                    <img
+                                                        src={box.first_photo_url_public}
+                                                        alt={box.name}
+                                                        className="w-16 h-16 object-cover rounded" // サイズとスタイルを指定
+                                                    />
+                                                ) : <div className="w-16 h-16 bg-base-200 rounded flex items-center justify-center text-xs text-base-content/50">画像なし</div>}
+                                            </td>
                                             <td>{box.name}</td>
                                             <td>{box.description}</td>
+                                            <td>{new Date(box.updated_at).toLocaleString()}</td>
                                             <td className="whitespace-nowrap"> {/* Prevent wrapping in the cell itself */}
                                                 <div className="flex items-center gap-1"> {/* Use flex to align buttons in a row and reduce gap */}
                                                     <Link
-                                                        href={route('boxes.show', box.id)}
+                                                        href={route('boxes.show', box.uuid)}
                                                         className="btn btn-xs btn-outline btn-accent"
                                                         onClick={(e) => e.stopPropagation()}
                                                     >
                                                         詳細
                                                     </Link>
                                                     <Link
-                                                        href={route('boxes.edit', box.id)}
+                                                        href={route('boxes.edit', box.uuid)}
                                                         className="btn btn-xs btn-outline btn-info" // Changed to btn-xs for smaller size
                                                         onClick={(e) => e.stopPropagation()} // Prevent row click when clicking button
                                                     >
                                                         編集
                                                     </Link>
                                                     <button
-                                                        onClick={(e) => handleDelete(e, box.id, box.name)}
+                                                        onClick={(e) => handleDelete(e, box.uuid, box.name)}
                                                         className="btn btn-xs btn-outline btn-error"
                                                     >
                                                         削除
