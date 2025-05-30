@@ -36,6 +36,7 @@ export default function BoxesList({ auth, boxes }) {
                             <table className="table table-zebra w-full">
                                 <thead>
                                     <tr>
+                                        <th className="w-20">画像</th> {/* 画像カラムの幅を少し指定 */}
                                         <th>名前</th>
                                         <th>説明</th>
                                         <th>更新日時</th>
@@ -49,6 +50,15 @@ export default function BoxesList({ auth, boxes }) {
                                             onClick={() => handleRowClick(box.uuid)}
                                             className="hover" // Removed cursor-pointer from entire row if edit button is preferred
                                         >
+                                            <td>
+                                                {box.first_photo_url_public ? (
+                                                    <img
+                                                        src={box.first_photo_url_public}
+                                                        alt={box.name}
+                                                        className="w-16 h-16 object-cover rounded" // サイズとスタイルを指定
+                                                    />
+                                                ) : <div className="w-16 h-16 bg-base-200 rounded flex items-center justify-center text-xs text-base-content/50">画像なし</div>}
+                                            </td>
                                             <td>{box.name}</td>
                                             <td>{box.description}</td>
                                             <td>{new Date(box.updated_at).toLocaleString()}</td>

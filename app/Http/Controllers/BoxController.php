@@ -16,7 +16,17 @@ class BoxController extends Controller
     public function index(): Response
     {
         // ログインしているユーザーに紐づくBoxを取得
-        $boxes = auth()->user()->boxes()->orderByDesc('updated_at')->get();
+        $boxes = auth()->user()->boxes()
+            ->with(['photos' => function ($query) {
+                $query->orderBy('id')->limit(1); // 各BOXの最初の写真のみを取得 (ID順)
+            }])
+            ->orderByDesc('updated_at')
+            ->get();
+
+        // 各BOXの最初の写真に公開URLを付与
+        $boxes->each(function ($box) {
+            $box->first_photo_url_public = $box->photos->first() ? Storage::url($box->photos->first()->file_path) : null;
+        });
 
         return Inertia::render('Boxes/BoxesList', ['boxes' => $boxes]);
     }
