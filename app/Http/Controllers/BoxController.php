@@ -39,11 +39,23 @@ class BoxController extends Controller
         ]);
 
         // ログインユーザーのBoxとして作成
-        // Userモデルに boxes() リレーションが定義され、
-        // Boxモデルの $fillable に name と description が設定されている前提
         $request->user()->boxes()->create($validated);
 
         return redirect()->route('boxes.index')->with('success', 'BOXが作成されました。');
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show(Box $box): Response
+    {
+        // TODO: 認可(未実装)
+        // $this->authorize('view', $box);
+
+        // 必要に応じて、関連データも Eager Loading できます
+        // $box->load('photos');
+
+        return Inertia::render('Boxes/Show', ['box' => $box]);
     }
 
     /**
@@ -51,10 +63,9 @@ class BoxController extends Controller
      */
     public function edit(Box $box): Response
     {
-        // 認可: ログインユーザーがこのBOXを編集する権限があるか確認 (Policy推奨)
-        // if (auth()->user()->cannot('update', $box)) {
-        //     abort(403);
-        // }
+        // TODO: 認可(未実装)
+        // $this->authorize('update', $box);
+
         return Inertia::render('Boxes/Edit', [
             'box' => $box,
         ]);
@@ -65,10 +76,9 @@ class BoxController extends Controller
      */
     public function update(Request $request, Box $box): RedirectResponse
     {
-        // 認可
-        // if (auth()->user()->cannot('update', $box)) {
-        //     abort(403);
-        // }
+        // TODO: 認可(未実装)
+        // $this->authorize('update', $box);
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -78,5 +88,17 @@ class BoxController extends Controller
 
         return redirect()->route('boxes.index')->with('success', 'BOXが更新されました。');
     }
-    // TODO: show, destroy メソッドを後ほど追加
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(Box $box): RedirectResponse
+    {
+        // TODO: 認可(未実装)
+        // $this->authorize('delete', $box);
+
+        $box->delete();
+
+        return redirect()->route('boxes.index')->with('success', 'BOXが削除されました。');
+    }
 }

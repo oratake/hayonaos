@@ -7,6 +7,16 @@ export default function BoxesList({ auth, boxes }) {
         router.visit(route('boxes.show', boxId));
     };
 
+    const handleDelete = (e, boxId, boxName) => {
+        e.stopPropagation(); // Prevent row click event
+        if (confirm(`「${boxName}」を本当に削除しますか？`)) {
+            router.delete(route('boxes.destroy', boxId), {
+                preserveScroll: true, // Optional: to maintain scroll position after delete
+                // onSuccess: () => { /* Optional: handle success client-side */ },
+            });
+        }
+    };
+
     return (
         <AuthenticatedLayout
             user={auth.user}
@@ -42,14 +52,29 @@ export default function BoxesList({ auth, boxes }) {
                                             <td>{box.id}</td>
                                             <td>{box.name}</td>
                                             <td>{box.description}</td>
-                                            <td>
-                                                <Link
-                                                    href={route('boxes.edit', box.id)}
-                                                    className="btn btn-sm btn-outline btn-info"
-                                                    onClick={(e) => e.stopPropagation()} // Prevent row click when clicking button
-                                                >
-                                                    編集
-                                                </Link>
+                                            <td className="whitespace-nowrap"> {/* Prevent wrapping in the cell itself */}
+                                                <div className="flex items-center gap-1"> {/* Use flex to align buttons in a row and reduce gap */}
+                                                    <Link
+                                                        href={route('boxes.show', box.id)}
+                                                        className="btn btn-xs btn-outline btn-accent"
+                                                        onClick={(e) => e.stopPropagation()}
+                                                    >
+                                                        詳細
+                                                    </Link>
+                                                    <Link
+                                                        href={route('boxes.edit', box.id)}
+                                                        className="btn btn-xs btn-outline btn-info" // Changed to btn-xs for smaller size
+                                                        onClick={(e) => e.stopPropagation()} // Prevent row click when clicking button
+                                                    >
+                                                        編集
+                                                    </Link>
+                                                    <button
+                                                        onClick={(e) => handleDelete(e, box.id, box.name)}
+                                                        className="btn btn-xs btn-outline btn-error"
+                                                    >
+                                                        削除
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
                                     ))}

@@ -26,7 +26,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/boxes', [BoxController::class, 'store'])->name('boxes.store');
     Route::get('/boxes/{box}/edit', [BoxController::class, 'edit'])->name('boxes.edit');
     Route::put('/boxes/{box}', [BoxController::class, 'update'])->name('boxes.update');
-    // TODO: Route::get('/boxes/{box}', [BoxController::class, 'show'])->name('boxes.show');
+    Route::delete('/boxes/{box}', [BoxController::class, 'destroy'])->name('boxes.destroy');
+    Route::get('/boxes/{box}', [BoxController::class, 'show'])->name('boxes.show');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
