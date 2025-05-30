@@ -36,9 +36,9 @@ export default function BoxesList({ auth, boxes }) {
                             <table className="table table-zebra w-full">
                                 <thead>
                                     <tr>
-                                        <th>ID</th>
                                         <th>名前</th>
                                         <th>説明</th>
+                                        <th>更新日時</th>
                                         <th>操作</th>
                                     </tr>
                                 </thead>
@@ -49,9 +49,9 @@ export default function BoxesList({ auth, boxes }) {
                                             onClick={() => handleRowClick(box.uuid)}
                                             className="hover" // Removed cursor-pointer from entire row if edit button is preferred
                                         >
-                                            <td>{box.id}</td>
                                             <td>{box.name}</td>
                                             <td>{box.description}</td>
+                                            <td>{new Date(box.updated_at).toLocaleString()}</td>
                                             <td className="whitespace-nowrap"> {/* Prevent wrapping in the cell itself */}
                                                 <div className="flex items-center gap-1"> {/* Use flex to align buttons in a row and reduce gap */}
                                                     <Link

@@ -16,7 +16,7 @@ class BoxController extends Controller
     public function index(): Response
     {
         // ログインしているユーザーに紐づくBoxを取得
-        $boxes = auth()->user()->boxes()->latest()->get();
+        $boxes = auth()->user()->boxes()->orderByDesc('updated_at')->get();
 
         return Inertia::render('Boxes/BoxesList', ['boxes' => $boxes]);
     }
