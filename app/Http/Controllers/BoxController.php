@@ -98,7 +98,10 @@ class BoxController extends Controller
             $photo->photo_url_public = Storage::url($photo->file_path);
         });
 
-        return Inertia::render('Boxes/Show', ['box' => $box]);
+        return Inertia::render('Boxes/Show', [
+            'box' => $box,
+            'currentAbsoluteUrl' => url()->current(), // 現在の完全なURLを追加
+        ]);
     }
 
     /**

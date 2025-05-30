@@ -3,7 +3,8 @@ import { Head, Link, usePage } from '@inertiajs/react';
 import { QRCodeCanvas } from 'qrcode.react'; // QRCodeCanvasコンポーネントをインポート
 
 export default function Show({ auth, box }) {
-    const { url } = usePage(); // 現在のページのURLを取得
+    // コントローラーから渡された完全なURLを取得
+    const { currentAbsoluteUrl } = usePage().props;
 
     return (
         <AuthenticatedLayout
@@ -43,13 +44,13 @@ export default function Show({ auth, box }) {
                             </div>
                             <div>
                                 <h3 className="text-lg font-medium text-gray-900">BOXのURL</h3>
-                                <Link href={url} className="mt-1 text-sm text-blue-600 hover:text-blue-800 break-all">
-                                    {url}
+                                <Link href={currentAbsoluteUrl} className="mt-1 text-sm text-blue-600 hover:text-blue-800 break-all">
+                                    {currentAbsoluteUrl}
                                 </Link>
                                 {/* QRコードの表示 */}
                                 <div className="mt-4">
                                     <QRCodeCanvas // SVGからCanvasに変更
-                                        value={url} // QRコードにするURL
+                                        value={currentAbsoluteUrl} // QRコードにするURLを完全なURLに変更
                                         size={64} // QRコードのサイズ (ピクセル)
                                         bgColor={"#ffffff"} // 背景色
                                         fgColor={"#000000"} // 前景色
