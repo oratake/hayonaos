@@ -23,9 +23,15 @@ class BoxController extends Controller
             ->orderByDesc('updated_at')
             ->get();
 
-        // 各BOXの最初の写真に公開URLを付与
         $boxes->each(function ($box) {
-            $box->first_photo_url_public = $box->photos->first() ? Storage::url($box->photos->first()->file_path) : null;
+            // サムネイルパスがあればサムネイルURLを、なければオリジナル画像URLを、どちらもなければnull
+            if ($box->photos->first() && $box->photos->first()->thumbnail_file_path) {
+                $box->first_photo_url_public = Storage::url($box->photos->first()->thumbnail_file_path);
+            } elseif ($box->photos->first() && $box->photos->first()->file_path) {
+                $box->first_photo_url_public = Storage::url($box->photos->first()->file_path);
+            } else {
+                $box->first_photo_url_public = null;
+            }
         });
 
         return Inertia::render('Boxes/BoxesList', ['boxes' => $boxes]);
