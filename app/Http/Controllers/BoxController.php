@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
+use Intervention\Image\ImageManager;
+
 class BoxController extends Controller
 {
     /**
@@ -48,7 +50,7 @@ class BoxController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, ImageManager $imageManager): RedirectResponse
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -60,8 +62,6 @@ class BoxController extends Controller
             'new_photo_captions.*' => 'nullable|string|max:255',
         ]);
 
-        // // ログインユーザーのBoxとして作成
-        // $request->user()->boxes()->create($validated);
         $boxData = [
             'name' => $validated['name'],
             'description' => $validated['description'],
@@ -73,12 +73,24 @@ class BoxController extends Controller
         if ($request->hasFile('new_photos')) {
             foreach ($request->file('new_photos') as $index => $photoFile) {
                 if ($photoFile->isValid()) {
-                    $path = $photoFile->store('box_photos', 'public');
-                    $caption = $request->input("new_photo_captions.{$index}", null); // Get caption by index
+                    $originalPath = $photoFile->store('box_photos', 'public');
+                    $caption = $request->input("new_photo_captions.{$index}", null);
+
+                    // サムネイル生成
+                    $thumbnailImage = $imageManager->read(storage_path('app/public/' . $originalPath));
+                    $thumbnailImage->cover(150, 150); // 150x150にリサイズしてクロップ
+                    $thumbnailFilename = 'thumb_' . basename($originalPath);
+                    $thumbnailDirectory = 'box_photo_thumbnails';
+                    Storage::disk('public')->makeDirectory($thumbnailDirectory); // ディレクトリがなければ作成
+                    $thumbnailPath = $thumbnailDirectory . '/' . $thumbnailFilename;
+                    $thumbnailImage->save(Storage::disk('public')->path($thumbnailPath));
+
                     $box->photos()->create([
-                        'file_path' => $path,
+                        'file_path' => $originalPath,
+                        'thumbnail_file_path' => $thumbnailPath,
                         'caption' => $caption,
                     ]);
+
                 }
             }
         }
