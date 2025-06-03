@@ -57,7 +57,7 @@ class BoxController extends Controller
             'description' => 'nullable|string',
             'qr_code_url' => 'nullable|url|max:255',
             'new_photos' => 'nullable|array',
-            'new_photos.*' => 'image|mimes:jpeg,png,jpg,gif|max:5120', // 5MB per photo
+            'new_photos.*' => 'image|mimes:jpeg,png,jpg,gif|max:10240', // 10MB per photo max
             'new_photo_captions' => 'nullable|array',
             'new_photo_captions.*' => 'nullable|string|max:255',
         ]);
@@ -149,7 +149,7 @@ class BoxController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Box $box): RedirectResponse
+    public function update(Request $request, Box $box, ImageManager $imageManager): RedirectResponse
     {
         // TODO: 認可(未実装)
         // $this->authorize('update', $box);
@@ -159,7 +159,7 @@ class BoxController extends Controller
             'description' => 'nullable|string',
             'qr_code_url' => 'nullable|url|max:255',
             'new_photos' => 'nullable|array',
-            'new_photos.*' => 'image|mimes:jpeg,png,jpg,gif|max:5120',
+            'new_photos.*' => 'image|mimes:jpeg,png,jpg,gif|max:10240', // 10MB par photo max
             'new_photo_captions' => 'nullable|array',
             'new_photo_captions.*' => 'nullable|string|max:255',
             'photos_to_delete' => 'nullable|array',
