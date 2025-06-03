@@ -3,14 +3,14 @@ import { Head, Link, router } from '@inertiajs/react';
 
 export default function BoxesList({ auth, boxes }) {
 
-    const handleRowClick = (boxId) => {
-        router.visit(route('boxes.show', boxId));
+    const handleRowClick = (boxUuid) => {
+        router.visit(route('boxes.show', boxUuid));
     };
 
-    const handleDelete = (e, boxId, boxName) => {
-        e.stopPropagation(); // Prevent row click event
-        if (confirm(`「${boxName}」を本当に削除しますか？`)) {
-            router.delete(route('boxes.destroy', boxId), {
+    const handleDelete = (e, boxUuid, boxName) => {
+        e.stopPropagation();
+        if (confirm(`「${boxName}」を本当に削除しますか？この操作は元に戻せません。BOX内の写真も全て削除されます。`)) {
+            router.delete(route('boxes.destroy', boxUuid), {
                 preserveScroll: true, // Optional: to maintain scroll position after delete
                 // onSuccess: () => { /* Optional: handle success client-side */ },
             });
@@ -36,7 +36,7 @@ export default function BoxesList({ auth, boxes }) {
                             <table className="table table-zebra w-full">
                                 <thead>
                                     <tr>
-                                        <th className="w-20">画像</th> {/* 画像カラムの幅を少し指定 */}
+                                        <th className="w-20">画像</th>
                                         <th>名前</th>
                                         <th>説明</th>
                                         <th>更新日時</th>
@@ -48,22 +48,22 @@ export default function BoxesList({ auth, boxes }) {
                                         <tr
                                             key={box.uuid}
                                             onClick={() => handleRowClick(box.uuid)}
-                                            className="hover" // Removed cursor-pointer from entire row if edit button is preferred
+                                            className="hover cursor-pointer"
                                         >
                                             <td>
                                                 {box.first_photo_url_public ? (
                                                     <img
                                                         src={box.first_photo_url_public}
                                                         alt={box.name}
-                                                        className="w-16 h-16 object-cover rounded" // サイズとスタイルを指定
+                                                        className="w-16 h-16 object-cover rounded"
                                                     />
                                                 ) : <div className="w-16 h-16 bg-base-200 rounded flex items-center justify-center text-xs text-base-content/50">画像なし</div>}
                                             </td>
                                             <td>{box.name}</td>
-                                            <td>{box.description}</td>
+                                            <td className="whitespace-pre-wrap max-w-xs truncate">{box.description}</td> {/* 説明が長い場合に省略 */}
                                             <td>{new Date(box.updated_at).toLocaleString()}</td>
-                                            <td className="whitespace-nowrap"> {/* Prevent wrapping in the cell itself */}
-                                                <div className="flex items-center gap-1"> {/* Use flex to align buttons in a row and reduce gap */}
+                                            <td className="whitespace-nowrap">
+                                                <div className="flex items-center gap-1">
                                                     <Link
                                                         href={route('boxes.show', box.uuid)}
                                                         className="btn btn-xs btn-outline btn-accent"
@@ -73,8 +73,8 @@ export default function BoxesList({ auth, boxes }) {
                                                     </Link>
                                                     <Link
                                                         href={route('boxes.edit', box.uuid)}
-                                                        className="btn btn-xs btn-outline btn-info" // Changed to btn-xs for smaller size
-                                                        onClick={(e) => e.stopPropagation()} // Prevent row click when clicking button
+                                                        className="btn btn-xs btn-outline btn-info"
+                                                        onClick={(e) => e.stopPropagation()}
                                                     >
                                                         編集
                                                     </Link>
