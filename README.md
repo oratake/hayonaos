@@ -50,3 +50,10 @@ $ sail npm run dev
 ```shell
 $ sail npm run build
 ```
+
+## コマンド類
+
+- BOX一覧の画像 サムネイル画像の無い物のサムネイル生成
+```shell
+$ sail artisan app:generate-missing-thumbnails # 強制再生成の場合 --overwrite
+```
