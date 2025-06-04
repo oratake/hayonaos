@@ -3,15 +3,26 @@
 namespace App\Http\Controllers;
 
 use App\Models\Box;
+use App\Models\BoxPhoto;
+use App\Services\BoxPhotoService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
-use Intervention\Image\ImageManager;
 
 class BoxController extends Controller
 {
+    private BoxPhotoService $boxPhotoService;
+
+    /**
+     * Inject the BoxPhotoService via the constructor.
+     */
+    public function __construct(BoxPhotoService $boxPhotoService)
+    {
+        $this->boxPhotoService = $boxPhotoService;
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -50,7 +61,7 @@ class BoxController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request, ImageManager $imageManager): RedirectResponse
+    public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -73,23 +84,9 @@ class BoxController extends Controller
         if ($request->hasFile('new_photos')) {
             foreach ($request->file('new_photos') as $index => $photoFile) {
                 if ($photoFile->isValid()) {
-                    $originalPath = $photoFile->store('box_photos', 'public');
                     $caption = $request->input("new_photo_captions.{$index}", null);
 
-                    // サムネイル生成
-                    $thumbnailImage = $imageManager->read(storage_path('app/public/' . $originalPath));
-                    $thumbnailImage->cover(150, 150); // 150x150にリサイズしてクロップ
-                    $thumbnailFilename = 'thumb_' . basename($originalPath);
-                    $thumbnailDirectory = 'box_photo_thumbnails';
-                    Storage::disk('public')->makeDirectory($thumbnailDirectory); // ディレクトリがなければ作成
-                    $thumbnailPath = $thumbnailDirectory . '/' . $thumbnailFilename;
-                    $thumbnailImage->save(Storage::disk('public')->path($thumbnailPath));
-
-                    $box->photos()->create([
-                        'file_path' => $originalPath,
-                        'thumbnail_file_path' => $thumbnailPath,
-                        'caption' => $caption,
-                    ]);
+                    $this->boxPhotoService->createPhotoForBox($box, $photoFile, $caption);
                 }
             }
         }
@@ -109,7 +106,7 @@ class BoxController extends Controller
         $box->load(['photos' => function ($query) {
             $query->orderBy('id');
         }]);
-        
+
         $box->photos->each(function ($photo) {
             $photo->original_photo_url_public = Storage::url($photo->file_path); // オリジナル画像URL
             // サムネイルパスがあればサムネイルURLを、なければオリジナル画像URLを (フォールバック)
@@ -149,7 +146,7 @@ class BoxController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Box $box, ImageManager $imageManager): RedirectResponse
+    public function update(Request $request, Box $box): RedirectResponse
     {
         // TODO: 認可(未実装)
         // $this->authorize('update', $box);
@@ -174,17 +171,12 @@ class BoxController extends Controller
             'qr_code_url' => $validated['qr_code_url'],
         ];
         $box->update($boxData);
-        
+
         if (!empty($validated['photos_to_delete'])) {
             foreach ($validated['photos_to_delete'] as $photoIdToDelete) {
                 $photo = $box->photos()->find($photoIdToDelete);
-                if ($photo) {
-                    Storage::disk('public')->delete($photo->file_path);
-                    if ($photo->thumbnail_file_path) { // サムネイルも削除
-                        Storage::disk('public')->delete($photo->thumbnail_file_path);
-                    }
-                    $photo->delete();
-                }
+            
+                $this->boxPhotoService->deletePhoto($photo);
             }
         }
 
@@ -200,23 +192,9 @@ class BoxController extends Controller
         if ($request->hasFile('new_photos')) {
             foreach ($request->file('new_photos') as $index => $photoFile) {
                 if ($photoFile->isValid()) {
-                    $originalPath = $photoFile->store('box_photos', 'public');
                     $caption = $request->input("new_photo_captions.{$index}", null);
 
-                    // サムネイル生成
-                    $thumbnailImage = $imageManager->read(storage_path('app/public/' . $originalPath));
-                    $thumbnailImage->cover(150, 150); // 150x150にリサイズしてクロップ
-                    $thumbnailFilename = 'thumb_' . basename($originalPath);
-                    $thumbnailDirectory = 'box_photo_thumbnails';
-                    Storage::disk('public')->makeDirectory($thumbnailDirectory); // ディレクトリがなければ作成
-                    $thumbnailPath = $thumbnailDirectory . '/' . $thumbnailFilename;
-                    $thumbnailImage->save(Storage::disk('public')->path($thumbnailPath));
-
-                    $box->photos()->create([
-                        'file_path' => $originalPath,
-                        'thumbnail_file_path' => $thumbnailPath,
-                        'caption' => $caption,
-                    ]);
+                    $this->boxPhotoService->createPhotoForBox($box, $photoFile, $caption);
                 }
             }
         }
@@ -234,11 +212,7 @@ class BoxController extends Controller
 
         // 関連する写真を先に削除 (ストレージからも)
         foreach ($box->photos as $photo) {
-            Storage::disk('public')->delete($photo->file_path);
-            if ($photo->thumbnail_file_path) {
-                Storage::disk('public')->delete($photo->thumbnail_file_path);
-            }
-            $photo->delete();
+            $this->boxPhotoService->deletePhoto($photo);
         }
         $box->delete();
 
