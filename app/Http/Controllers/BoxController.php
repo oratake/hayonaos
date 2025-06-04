@@ -3,13 +3,26 @@
 namespace App\Http\Controllers;
 
 use App\Models\Box;
+use App\Models\BoxPhoto;
+use App\Services\BoxPhotoService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
+
 class BoxController extends Controller
 {
+    private BoxPhotoService $boxPhotoService;
+
+    /**
+     * Inject the BoxPhotoService via the constructor.
+     */
+    public function __construct(BoxPhotoService $boxPhotoService)
+    {
+        $this->boxPhotoService = $boxPhotoService;
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -23,9 +36,15 @@ class BoxController extends Controller
             ->orderByDesc('updated_at')
             ->get();
 
-        // 各BOXの最初の写真に公開URLを付与
         $boxes->each(function ($box) {
-            $box->first_photo_url_public = $box->photos->first() ? Storage::url($box->photos->first()->file_path) : null;
+            // サムネイルパスがあればサムネイルURLを、なければオリジナル画像URLを、どちらもなければnull
+            $first_photo = $box->photos->first();
+            $box->first_photo_url_public = null;
+            if ($first_photo && $first_photo->thumbnail_file_path) {
+                $box->first_photo_url_public = Storage::url($first_photo->thumbnail_file_path);
+            } elseif ($first_photo && $first_photo->file_path) {
+                $box->first_photo_url_public = Storage::url($first_photo->file_path);
+            }
         });
 
         return Inertia::render('Boxes/BoxesList', ['boxes' => $boxes]);
@@ -49,13 +68,11 @@ class BoxController extends Controller
             'description' => 'nullable|string',
             'qr_code_url' => 'nullable|url|max:255',
             'new_photos' => 'nullable|array',
-            'new_photos.*' => 'image|mimes:jpeg,png,jpg,gif|max:5120',
+            'new_photos.*' => 'image|mimes:jpeg,png,jpg,gif|max:10240', // 10MB per photo max
             'new_photo_captions' => 'nullable|array',
             'new_photo_captions.*' => 'nullable|string|max:255',
         ]);
 
-        // // ログインユーザーのBoxとして作成
-        // $request->user()->boxes()->create($validated);
         $boxData = [
             'name' => $validated['name'],
             'description' => $validated['description'],
@@ -67,12 +84,9 @@ class BoxController extends Controller
         if ($request->hasFile('new_photos')) {
             foreach ($request->file('new_photos') as $index => $photoFile) {
                 if ($photoFile->isValid()) {
-                    $path = $photoFile->store('box_photos', 'public');
-                    $caption = $request->input("new_photo_captions.{$index}", null); // Get caption by index
-                    $box->photos()->create([
-                        'file_path' => $path,
-                        'caption' => $caption,
-                    ]);
+                    $caption = $request->input("new_photo_captions.{$index}", null);
+
+                    $this->boxPhotoService->createPhotoForBox($box, $photoFile, $caption);
                 }
             }
         }
@@ -90,17 +104,22 @@ class BoxController extends Controller
 
         // 必要に応じて、関連データも Eager Loading できます
         $box->load(['photos' => function ($query) {
-            $query->orderBy('id'); // Or any other consistent order
+            $query->orderBy('id');
         }]);
-        
-        // Add public URL for photos
+
         $box->photos->each(function ($photo) {
-            $photo->photo_url_public = Storage::url($photo->file_path);
+            $photo->original_photo_url_public = Storage::url($photo->file_path); // オリジナル画像URL
+            // サムネイルパスがあればサムネイルURLを、なければオリジナル画像URLを (フォールバック)
+            if ($photo->thumbnail_file_path) {
+                $photo->display_photo_url_public = Storage::url($photo->thumbnail_file_path);
+            } else {
+                $photo->display_photo_url_public = Storage::url($photo->file_path);
+            }
         });
 
         return Inertia::render('Boxes/Show', [
             'box' => $box,
-            'currentAbsoluteUrl' => url()->current(), // 現在の完全なURLを追加
+            'currentAbsoluteUrl' => url()->current(),
         ]);
     }
 
@@ -112,11 +131,12 @@ class BoxController extends Controller
         // TODO: 認可(未実装)
         // $this->authorize('update', $box);
 
-        $box->load('photos'); // Load all photos
-
-        // Add public URL for photos
+        $box->load('photos');
         $box->photos->each(function ($photo) {
-            $photo->photo_url_public = Storage::url($photo->file_path);
+            $photo->photo_url_public = Storage::url($photo->file_path); // オリジナル画像のURL
+            // 編集画面ではサムネイルとオリジナル両方表示する可能性を考慮 (ここではオリジナルを維持)
+            // または、サムネイルパスを渡してフロントで制御
+            $photo->thumbnail_url_public = $photo->thumbnail_file_path ? Storage::url($photo->thumbnail_file_path) : Storage::url($photo->file_path);
         });
         return Inertia::render('Boxes/Edit', [
             'box' => $box,
@@ -136,38 +156,32 @@ class BoxController extends Controller
             'description' => 'nullable|string',
             'qr_code_url' => 'nullable|url|max:255',
             'new_photos' => 'nullable|array',
-            'new_photos.*' => 'image|mimes:jpeg,png,jpg,gif|max:5120',
+            'new_photos.*' => 'image|mimes:jpeg,png,jpg,gif|max:10240', // 10MB par photo max
             'new_photo_captions' => 'nullable|array',
             'new_photo_captions.*' => 'nullable|string|max:255',
             'photos_to_delete' => 'nullable|array',
-            'photos_to_delete.*' => 'integer|exists:tbl_box_photos,id', // Ensure IDs exist
+            'photos_to_delete.*' => 'integer|exists:tbl_box_photos,id',
             'updated_captions' => 'nullable|array',
-            'updated_captions.*' => 'nullable|string|max:255', // Captions for existing photos
+            'updated_captions.*' => 'nullable|string|max:255',
         ]);
 
-        // Update Box details
         $boxData = [
             'name' => $validated['name'],
             'description' => $validated['description'],
             'qr_code_url' => $validated['qr_code_url'],
         ];
         $box->update($boxData);
-        
-        // Delete marked photos
+
         if (!empty($validated['photos_to_delete'])) {
             foreach ($validated['photos_to_delete'] as $photoIdToDelete) {
                 $photo = $box->photos()->find($photoIdToDelete);
-                if ($photo) {
-                    Storage::disk('public')->delete($photo->file_path);
-                    $photo->delete();
-                }
+            
+                $this->boxPhotoService->deletePhoto($photo);
             }
         }
 
-        // Update captions of existing photos
         if (!empty($validated['updated_captions'])) {
             foreach ($validated['updated_captions'] as $photoId => $newCaption) {
-                // Ensure $photoId is a valid ID from the box's photos
                 $photoToUpdate = $box->photos()->find($photoId);
                 if ($photoToUpdate) {
                     $photoToUpdate->update(['caption' => $newCaption]);
@@ -175,16 +189,12 @@ class BoxController extends Controller
             }
         }
 
-        // Add new photos
         if ($request->hasFile('new_photos')) {
             foreach ($request->file('new_photos') as $index => $photoFile) {
                 if ($photoFile->isValid()) {
-                    $path = $photoFile->store('box_photos', 'public');
                     $caption = $request->input("new_photo_captions.{$index}", null);
-                    $box->photos()->create([
-                        'file_path' => $path,
-                        'caption' => $caption,
-                    ]);
+
+                    $this->boxPhotoService->createPhotoForBox($box, $photoFile, $caption);
                 }
             }
         }
@@ -200,6 +210,10 @@ class BoxController extends Controller
         // TODO: 認可(未実装)
         // $this->authorize('delete', $box);
 
+        // 関連する写真を先に削除 (ストレージからも)
+        foreach ($box->photos as $photo) {
+            $this->boxPhotoService->deletePhoto($photo);
+        }
         $box->delete();
 
         return redirect()->route('boxes.index')->with('success', 'BOXが削除されました。');

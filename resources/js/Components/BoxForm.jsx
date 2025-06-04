@@ -170,7 +170,12 @@ export default function BoxForm({
                     <h3 className="text-lg font-medium">登録済みの写真</h3>
                     {existingPhotos.map((photo) => (
                         <div key={photo.id} className="p-4 border rounded-lg shadow-sm bg-base-200">
-                            <img src={photo.photo_url_public} alt={photo.caption || `既存写真 ${photo.id}`} className="w-40 h-40 object-cover rounded-md mb-2" />
+                            <img
+                                // photo.photo_url_public から photo.thumbnail_url_public に変更
+                                src={photo.thumbnail_url_public || photo.photo_url_public} // サムネイルがなければオリジナル
+                                alt={photo.caption || `既存写真 ${photo.id}`}
+                                className="w-40 h-40 object-cover rounded-md mb-2"
+                            />
                             <TextInput
                                 type="text"
                                 placeholder="キャプション (任意)"

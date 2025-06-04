@@ -16,6 +16,7 @@ class BoxPhoto extends Model
     protected $fillable = [
         'box_id',
         'file_path',
+        'thumbnail_file_path',
         'caption',
     ];
 

@@ -1,10 +1,29 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, usePage } from '@inertiajs/react';
-import { QRCodeCanvas } from 'qrcode.react'; // QRCodeCanvasコンポーネントをインポート
+import { QRCodeCanvas } from 'qrcode.react';
+import Modal from '@/Components/Modal';
+import { useState } from 'react';
 
 export default function Show({ auth, box }) {
     // コントローラーから渡された完全なURLを取得
     const { currentAbsoluteUrl } = usePage().props;
+    const [showImageModal, setShowImageModal] = useState(false);
+    const [selectedImageUrl, setSelectedImageUrl] = useState('');
+    const [selectedImageCaption, setSelectedImageCaption] = useState('');
+
+
+    const openImageModal = (imageUrl, caption) => {
+        setSelectedImageUrl(imageUrl);
+        setSelectedImageCaption(caption || '');
+        setShowImageModal(true);
+    };
+
+    const closeImageModal = () => {
+        setShowImageModal(false);
+        setSelectedImageUrl('');
+        setSelectedImageCaption('');
+    };
+
 
     return (
         <AuthenticatedLayout
@@ -17,7 +36,7 @@ export default function Show({ auth, box }) {
                     <div className="flex items-center gap-2">
                         <Link
                             href={route('boxes.edit', box.uuid)}
-                            className="btn btn-sm btn-info" // DaisyUIのinfoボタンスタイルを適用
+                            className="btn btn-sm btn-info"
                         >
                             編集
                         </Link>
@@ -43,21 +62,20 @@ export default function Show({ auth, box }) {
                                 <p className="mt-1 text-sm text-gray-600 whitespace-pre-wrap">{box.description || 'N/A'}</p>
                             </div>
                             <div>
-                                <h3 className="text-lg font-medium text-gray-900">BOXのURL</h3>
-                                <Link href={currentAbsoluteUrl} className="mt-1 text-sm text-blue-600 hover:text-blue-800 break-all">
-                                    {currentAbsoluteUrl}
-                                </Link>
-                                {/* QRコードの表示 */}
+                                <h3 className="text-lg font-medium text-gray-900">QRコード</h3>
                                 <div className="mt-4">
-                                    <QRCodeCanvas // SVGからCanvasに変更
-                                        value={currentAbsoluteUrl} // QRコードにするURLを完全なURLに変更
-                                        size={64} // QRコードのサイズ (ピクセル)
-                                        bgColor={"#ffffff"} // 背景色
-                                        fgColor={"#000000"} // 前景色
+                                    <QRCodeCanvas
+                                        value={box.qr_code_url || currentAbsoluteUrl}
+                                        size={64}
+                                        bgColor={"#ffffff"}
+                                        fgColor={"#000000"}
                                         level={"L"} // 誤り訂正レベル (L, M, Q, H)
-                                        includeMargin={false} // マージンを含めるか
+                                        includeMargin={false}
                                     />
                                 </div>
+                                <Link href={box.qr_code_url || currentAbsoluteUrl} className="mt-1 text-sm text-blue-600 hover:text-blue-800 break-all">
+                                    {box.qr_code_url || currentAbsoluteUrl}
+                                </Link>
                             </div>
                             <div>
                                 <h3 className="text-lg font-medium text-gray-900">作成日時</h3>
@@ -70,12 +88,17 @@ export default function Show({ auth, box }) {
                             {box.photos && box.photos.length > 0 && (
                                 <div className="mt-6">
                                     <h3 className="text-lg font-medium text-gray-900 mb-2">写真一覧</h3>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                                         {box.photos.map((photo) => (
                                             <div key={photo.id} className="border rounded-lg shadow-sm p-2">
-                                                <img src={photo.photo_url_public} alt={photo.caption || `写真 ${photo.id}`} className="w-full h-48 object-cover rounded-md mb-2" />
+                                                <img
+                                                    src={photo.display_photo_url_public}
+                                                    alt={photo.caption || `写真 ${photo.id}`}
+                                                    className="w-full h-40 object-cover rounded-md mb-2 cursor-pointer hover:opacity-75 transition-opacity"
+                                                    onClick={() => openImageModal(photo.original_photo_url_public, photo.caption)}
+                                                />
                                                 {photo.caption && (
-                                                    <p className="text-sm text-gray-600">{photo.caption}</p>
+                                                    <p className="text-xs text-gray-600 truncate" title={photo.caption}>{photo.caption}</p>
                                                 )}
                                             </div>
                                         ))}
@@ -86,6 +109,19 @@ export default function Show({ auth, box }) {
                     </div>
                 </div>
             </div>
+
+            {/* 画像表示用モーダル */}
+            <Modal show={showImageModal} onClose={closeImageModal} maxWidth="2xl" closeable={true}>
+                <div className="p-4 bg-base-100 rounded-lg">
+                    <img src={selectedImageUrl} alt={selectedImageCaption || "拡大画像"} className="max-w-full max-h-[80vh] mx-auto rounded-md" />
+                    {selectedImageCaption && (
+                        <p className="text-center mt-2 text-sm text-gray-700">{selectedImageCaption}</p>
+                    )}
+                    <div className="mt-4 text-right">
+                        <button onClick={closeImageModal} className="btn btn-sm btn-ghost">閉じる</button>
+                    </div>
+                </div>
+            </Modal>
         </AuthenticatedLayout>
     );
 }
