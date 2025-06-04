@@ -27,12 +27,12 @@ class BoxController extends Controller
 
         $boxes->each(function ($box) {
             // サムネイルパスがあればサムネイルURLを、なければオリジナル画像URLを、どちらもなければnull
-            if ($box->photos->first() && $box->photos->first()->thumbnail_file_path) {
-                $box->first_photo_url_public = Storage::url($box->photos->first()->thumbnail_file_path);
-            } elseif ($box->photos->first() && $box->photos->first()->file_path) {
-                $box->first_photo_url_public = Storage::url($box->photos->first()->file_path);
-            } else {
-                $box->first_photo_url_public = null;
+            $first_photo = $box->photos->first();
+            $box->first_photo_url_public = null;
+            if ($first_photo && $first_photo->thumbnail_file_path) {
+                $box->first_photo_url_public = Storage::url($first_photo->thumbnail_file_path);
+            } elseif ($first_photo && $first_photo->file_path) {
+                $box->first_photo_url_public = Storage::url($first_photo->file_path);
             }
         });
 
