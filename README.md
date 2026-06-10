@@ -57,3 +57,26 @@ $ sail npm run build
 ```shell
 $ sail artisan app:generate-missing-thumbnails # 強制再生成の場合 --overwrite
 ```
+
+## キューワーカー（バックグラウンドジョブ）
+
+エクスポート/インポート機能で必要です。
+
+起動
+```shell
+$ sail artisan queue:work
+```
+
+停止
+```shell
+# Ctrl+C
+```
+
+デーモンモード（常時起動）
+```shell
+$ sail artisan queue:work --daemon
+```
+
+> [!NOTE]
+> 開発中は別ターミナルで `sail artisan queue:work` を起動したままにしてください。
+> キューワーカーが動いていないと、エクスポート処理が完了しません。
