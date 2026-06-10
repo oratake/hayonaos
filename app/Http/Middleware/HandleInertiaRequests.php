@@ -2,7 +2,9 @@
 
 namespace App\Http\Middleware;
 
+use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -35,5 +37,20 @@ class HandleInertiaRequests extends Middleware
                 'user' => $request->user(),
             ],
         ];
+    }
+
+    /**
+     * Handle the incoming request.
+     * Skip Inertia processing for specific API endpoints.
+     */
+    public function handle(Request $request, Closure $next): \Illuminate\Http\Response|\Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
+    {
+        if ($request->path() === 'export/status') {
+            return $next($request);
+        }
+
+        $response = parent::handle($request, $next);
+
+        return $response;
     }
 }
