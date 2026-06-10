@@ -18,7 +18,7 @@ export default function ExportImport({ auth, exportJob }) {
     useEffect(() => {
         if (status === 'pending' || status === 'processing') {
             const timer = setInterval(() => {
-                axios.get(route('export.status')).then((response) => {
+                axios.get(route('export.status'), { params: { type: 'export' } }).then((response) => {
                     const { status, metadata, expires_at } = response.data;
                     if (status) {
                         setStatus(status);
@@ -50,14 +50,14 @@ export default function ExportImport({ auth, exportJob }) {
 
     // ダウンロード
     const handleDownload = () => {
-        window.open(route('export.download'), '_blank');
+        window.open(route('export.download', { type: 'export' }), '_blank');
     };
 
     // 削除
     const handleDelete = () => {
         if (!confirm('エクスポートデータを削除しますか？')) return;
 
-        router.delete(route('export.delete'), {
+        router.delete(route('export.delete', { type: 'export' }), {
             preserveScroll: true,
             onSuccess: () => {
                 setStatus('none');
@@ -96,7 +96,7 @@ export default function ExportImport({ auth, exportJob }) {
     // インポートステータス監視
     const pollImportStatus = () => {
         const timer = setInterval(() => {
-            axios.get(route('export.status')).then((response) => {
+            axios.get(route('export.status', { type: 'import' })).then((response) => {
                 const { status, type } = response.data;
                 if (type === 'import' && (status === 'completed' || status === 'failed')) {
                     clearInterval(timer);
