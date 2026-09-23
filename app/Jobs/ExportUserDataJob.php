@@ -149,7 +149,7 @@ class ExportUserDataJob implements ShouldQueue
             ]);
 
             // Clean up previous export after successful new export
-            $previousExport = $this->user->exports()
+            $previousExport = $this->user->exportJobs()
                 ->where('status', 'completed')
                 ->where('id', '!=', $this->exportJob->id)
                 ->orderByDesc('created_at')
