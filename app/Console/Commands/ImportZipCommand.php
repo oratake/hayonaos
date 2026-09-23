@@ -11,20 +11,20 @@ use ZipArchive;
 
 class ImportZipCommand extends Command
 {
-    protected $signature = 'app:import-zip {--file= : 導入する ZIP ファイルのパス} {--user= : 対象ユーザーのメールアドレス} {--force : 既存 Box を全削除して導入 (警告 + 確認) } {--keep-file : 導入後に ZIP を保持}';
+    protected $signature = 'app:import-zip {--path= : 導入する ZIP ファイルのパス} {--user= : 対象ユーザーのメールアドレス} {--force : 既存 Box を全削除して導入 (警告 + 確認) } {--keep-file : 導入後に ZIP を保持}';
 
     protected $description = 'FTP に落ちたエクスポート ZIP をキュー経由でインポートする';
 
     public function handle(): int
     {
-        $zipPath = $this->option('file');
+        $zipPath = $this->option('path');
         $userEmail = $this->option('user');
         $force = (bool) $this->option('force');
         $keepFile = (bool) $this->option('keep-file');
 
         if ($zipPath === null || $zipPath === '') {
             $this->error('ZIP ファイルを指定してください。');
-            $this->info('例: php artisan app:import-zip --file=/path/export.zip --user=user@example.com');
+            $this->info('例: php artisan app:import-zip --path=/path/export.zip --user=user@example.com');
             return Command::FAILURE;
         }
 

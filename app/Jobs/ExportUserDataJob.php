@@ -44,6 +44,8 @@ class ExportUserDataJob implements ShouldQueue
 
         \Log::info('[ExportJob] status updated to processing', ['job_id' => $this->exportJob->id]);
 
+        $outputPath = $this->exportJob->metadata['output_path'] ?? null;
+
         $filename = 'hayonaos-export-'.now()->format('Ymd').'-'.Str::random(8).'.zip';
         $zipPath = storage_path("app/private/exports/{$filename}");
         $zipDir = dirname($zipPath);
@@ -115,15 +117,20 @@ class ExportUserDataJob implements ShouldQueue
             unlink($zipPath);
 
             // Update job record
+            $jobMetadata = [
+                'filename' => $filename,
+                'boxes_count' => $boxes->count(),
+                'photos_count' => $boxes->sum(fn ($b) => $b->photos->count()),
+            ];
+            if ($outputPath) {
+                $jobMetadata['output_path'] = $outputPath;
+            }
+
             $this->exportJob->update([
                 'status' => 'completed',
                 'file_path' => $publicPath,
                 'expires_at' => now()->addHours(24),
-                'metadata' => [
-                    'filename' => $filename,
-                    'boxes_count' => $boxes->count(),
-                    'photos_count' => $boxes->sum(fn ($b) => $b->photos->count()),
-                ],
+                'metadata' => $jobMetadata,
             ]);
 
             \Log::info('[ExportJob] export completed', [
@@ -131,6 +138,22 @@ class ExportUserDataJob implements ShouldQueue
                 'boxes_count' => $boxes->count(),
                 'photos_count' => $boxes->sum(fn ($b) => $b->photos->count()),
             ]);
+
+            if ($outputPath) {
+                $targetDir = dirname($outputPath);
+                if (! is_dir($targetDir)) {
+                    mkdir($targetDir, 0755, true);
+                }
+                $target = is_dir($outputPath) ? $outputPath . basename($filename) : $outputPath;
+                $source = Storage::disk('public')->path($publicPath);
+                if (realpath($target) === false || realpath($target) !== realpath($source)) {
+                    copy($source, $target);
+                    \Log::info('[ExportJob] export copied to --path', [
+                        'job_id' => $this->exportJob->id,
+                        'target' => $target,
+                    ]);
+                }
+            }
 
             // Clean up previous export after successful new export
             $previousExport = $this->user->exportJobs()
