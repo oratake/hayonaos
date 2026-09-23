@@ -68,6 +68,11 @@ $ sail artisan app:import-zip --file=/path/export.zip --user=user@example.com
 ```shell
 $ sail artisan app:import-status --id={job-id}
 ```
+- 全データ (ボックス・写真を含む) をキュー経由でエクスポートする
+```shell
+$ sail artisan app:export-zip --user=user@example.com
+```
+  - 確認: `sail artisan app:export-status --id={job-id}` で状態を確認
 
 ## キューワーカー（バックグラウンドジョブ）
 
