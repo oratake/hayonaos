@@ -37,10 +37,9 @@ Route::middleware('auth')->group(function () {
     // Export/Import routes
     Route::get('/export', [ExportImportController::class, 'index'])->name('export.index');
     Route::post('/export/start', [ExportImportController::class, 'startExport'])->name('export.start');
-    Route::get('/export/status', [ExportImportController::class, 'getStatus'])->name('export.status');
-    Route::get('/export/download', [ExportImportController::class, 'download'])->name('export.download');
-    Route::delete('/export', [ExportImportController::class, 'delete'])->name('export.delete');
-    Route::post('/import', [ExportImportController::class, 'import'])->name('import');
+    Route::get('/export/status/{type?}', [ExportImportController::class, 'getStatus'])->name('export.status');
+    Route::get('/export/download/{type?}', [ExportImportController::class, 'download'])->name('export.download');
+    Route::delete('/export/{type?}', [ExportImportController::class, 'delete'])->name('export.delete');
 });
 
 require __DIR__.'/auth.php';

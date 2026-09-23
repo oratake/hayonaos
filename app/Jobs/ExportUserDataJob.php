@@ -61,60 +61,44 @@ class ExportUserDataJob implements ShouldQueue
 
             // Build metadata
             $metadata = [
-                'export_format_version' => '2',
+                'export_format_version' => '3',
                 'exported_at' => now()->toIso8601String(),
                 'app_version' => config('app.version', '11.x'),
                 'boxes' => [],
             ];
 
             foreach ($boxes as $box) {
-                // Format v2: use base64-encoded name as directory
-                $encodedName = base64_encode($box->name);
-                $boxDir = "boxes/{$encodedName}";
-                $zip->addEmptyDir($boxDir);
-
-                $boxMeta = [
-                    'uuid' => $box->uuid,
-                    'name' => $box->name,
-                    'encoded_name' => $encodedName,
-                    'description' => $box->description,
-                    'created_at' => $box->created_at->toIso8601String(),
-                    'photos' => [],
-                ];
-
+                // Collect photos for this box
+                $boxPhotos = [];
                 foreach ($box->photos as $photo) {
                     if ($photo->file_path) {
-                        $uuid = Str::uuid()->toString();
+                        $uuid = $photo->uuid;
                         $basename = basename($photo->file_path);
                         $photoFilename = "{$uuid}_{$basename}";
                         $sourcePath = Storage::disk('public')->path($photo->file_path);
 
                         if (file_exists($sourcePath)) {
-                            $zip->addFile($sourcePath, "{$boxDir}/{$photoFilename}");
+                            // Flat structure: all files in root of zip
+                            $zip->addFile($sourcePath, "{$photoFilename}");
                         }
                     }
 
-                    $photoMeta = [
+                    $boxPhotos[] = [
+                        'uuid' => $photo->uuid,
                         'file_path' => $photo->file_path,
-                        'thumbnail_file_path' => $photo->thumbnail_file_path,
                         'caption' => $photo->caption,
                         'created_at' => $photo->created_at->toIso8601String(),
-                        'encoded_name' => $photo->file_path ? basename($photo->file_path) : null,
                         'original_filename' => $photo->file_path ? basename($photo->file_path) : null,
                     ];
-
-                    $boxMeta['photos'][] = $photoMeta;
-
-                    // Add thumbnail to zip if it exists
-                    if ($photo->thumbnail_file_path) {
-                        $thumbSourcePath = Storage::disk('public')->path($photo->thumbnail_file_path);
-                        if (file_exists($thumbSourcePath)) {
-                            $zip->addFile($thumbSourcePath, "{$boxDir}/thumb_{$photoFilename}");
-                        }
-                    }
                 }
 
-                $metadata['boxes'][] = $boxMeta;
+                $metadata['boxes'][] = [
+                    'uuid' => $box->uuid,
+                    'name' => $box->name,
+                    'description' => $box->description,
+                    'created_at' => $box->created_at->toIso8601String(),
+                    'photos' => $boxPhotos,
+                ];
             }
 
             // Add metadata.json to root of zip

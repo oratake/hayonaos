@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Jobs\ExportUserDataJob;
-use App\Jobs\ImportUserDataJob;
 use App\Models\UserExportJob;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -101,8 +100,10 @@ class ExportImportController extends Controller
             'ip' => $request->ip(),
         ]);
 
+        $type = $request->route('type', $request->query('type', 'export'));
+
         $exportJob = Auth::user()->exportJobs()
-            ->where('type', 'export')
+            ->where('type', $type)
             ->orderBy('created_at', 'desc')
             ->first();
 
@@ -119,6 +120,7 @@ class ExportImportController extends Controller
 
         return response()->json([
             'status' => $exportJob->status,
+            'type' => $exportJob->type,
             'metadata' => $exportJob->metadata,
             'expires_at' => $exportJob->expires_at?->toIso8601String(),
             'file_path' => $exportJob->file_path,
@@ -144,14 +146,12 @@ class ExportImportController extends Controller
             return response()->json(['error' => 'エクスポートデータが期限切れです。'], 410);
         }
 
-        $file = Storage::disk('public')->path($exportJob->file_path);
-
-        if (!file_exists($file)) {
+        if (!Storage::disk('public')->exists($exportJob->file_path)) {
             return response()->json(['error' => 'ファイルが存在しません。'], 404);
         }
 
         $filename = $exportJob->metadata['filename'] ?? "hayonaos-export-{$exportJob->created_at->format('Ymd')}.zip";
-        return response()->download($file, $filename);
+        return Storage::disk('public')->download($exportJob->file_path, $filename);
     }
 
     /**
@@ -176,36 +176,5 @@ class ExportImportController extends Controller
         $exportJob->delete();
 
         return response()->json(['status' => 'deleted']);
-    }
-
-    /**
-     * データインポート
-     */
-    public function import(Request $request): \Illuminate\Http\JsonResponse
-    {
-        $request->validate([
-            'file' => 'required|file|mimes:zip|max:10240',
-        ]);
-
-        $file = $request->file('file');
-
-        // ZIPファイルを一時的に保存
-        $tempPath = storage_path("app/private/imports/import-{$request->user()->id}-" . time() . ".zip");
-        $file->move(storage_path('app/private/imports'), basename($tempPath));
-
-        $job = Auth::user()->exportJobs()->create([
-            'type' => 'import',
-            'status' => 'pending',
-            'metadata' => [
-                'original_filename' => $file->getClientOriginalName(),
-            ],
-        ]);
-
-        ImportUserDataJob::dispatch(Auth::user(), $job, $tempPath);
-
-        return response()->json([
-            'status' => 'started',
-            'message' => 'インポートを開始しました。',
-        ]);
     }
 }

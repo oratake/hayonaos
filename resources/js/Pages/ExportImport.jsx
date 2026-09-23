@@ -10,9 +10,6 @@ export default function ExportImport({ auth, exportJob }) {
     const [exportType, setExportType] = useState('all');
     const [exporting, setExporting] = useState(false);
     const [uploading, setUploading] = useState(false);
-    const [importStatus, setImportStatus] = useState(null);
-    const [importPolling, setImportPolling] = useState(false);
-    const fileInputRef = useRef(null);
 
     // エクスポートのステータス監視
     useEffect(() => {
@@ -66,45 +63,6 @@ export default function ExportImport({ auth, exportJob }) {
                 setExportType('all');
             },
         });
-    };
-
-    // インポート
-    const handleImport = (e) => {
-        e.preventDefault();
-        setUploading(true);
-        setImportStatus('processing');
-
-        const formData = new FormData();
-        formData.append('file', fileInputRef.current.files[0]);
-
-        router.post(route('import'), formData, {
-            preserveScroll: true,
-            onSuccess: (page) => {
-                setImportPolling(true);
-                pollImportStatus();
-            },
-            onError: () => {
-                setImportStatus('error');
-                setUploading(false);
-            },
-            onFinish: () => {
-                setUploading(false);
-            },
-        });
-    };
-
-    // インポートステータス監視
-    const pollImportStatus = () => {
-        const timer = setInterval(() => {
-            axios.get(route('export.status', { type: 'import' })).then((response) => {
-                const { status, type } = response.data;
-                if (type === 'import' && (status === 'completed' || status === 'failed')) {
-                    clearInterval(timer);
-                    setImportPolling(false);
-                    setImportStatus(status);
-                }
-            });
-        }, 3000);
     };
 
     return (
@@ -226,67 +184,6 @@ export default function ExportImport({ auth, exportJob }) {
                         </div>
                     </div>
 
-                    {/* インポートセクション */}
-                    <div className="bg-base-100 shadow-sm sm:rounded-lg">
-                        <div className="p-6">
-                            <h3 className="text-lg font-medium text-gray-900 mb-4">インポート</h3>
-
-                            {importStatus === 'processing' || importPolling ? (
-                                <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                                    <div className="flex items-center gap-2">
-                                        <span className="loading loading-spinner loading-sm"></span>
-                                        <span className="text-sm text-blue-800">
-                                            インポート処理中...
-                                        </span>
-                                    </div>
-                                </div>
-                            ) : null}
-
-                            {importStatus === 'completed' && (
-                                <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-                                    <p className="text-sm text-green-800">
-                                        インポート完了しました。
-                                    </p>
-                                </div>
-                            )}
-
-                            {importStatus === 'error' && (
-                                <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-                                    <p className="text-sm text-red-800">
-                                        エラーが発生しました。
-                                    </p>
-                                </div>
-                            )}
-
-                            <form onSubmit={handleImport} className="space-y-4">
-                                <div>
-                                    <label className="label">
-                                        <span className="label-text">ZIPファイルを選択</span>
-                                    </label>
-                                    <input
-                                        ref={fileInputRef}
-                                        type="file"
-                                        accept=".zip"
-                                        className="file-input file-input-bordered w-full"
-                                        disabled={uploading || importPolling}
-                                    />
-                                    <label className="label">
-                                        <span className="label-text-alt text-gray-500">
-                                            形式: hayonaos-export-YYYYMMDD_HHmmss.zip
-                                        </span>
-                                    </label>
-                                </div>
-
-                                <button
-                                    type="submit"
-                                    className="btn btn-primary"
-                                    disabled={uploading || importPolling}
-                                >
-                                    インポート開始
-                                </button>
-                            </form>
-                        </div>
-                    </div>
 
                 </div>
             </div>

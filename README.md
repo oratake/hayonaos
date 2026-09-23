@@ -58,6 +58,17 @@ $ sail npm run build
 $ sail artisan app:generate-missing-thumbnails # 強制再生成の場合 --overwrite
 ```
 
+- FTPに落ちたエクスポート ZIP をキュー経由でインポートする
+```shell
+$ sail artisan app:import-zip --file=/path/export.zip --user=user@example.com
+```
+  - `--force`: 対象ユーザーの既存 Box を全削除して導入（Box 数・Photo 数を提示し y/N で確認）
+  - `--keep-file`: 完了後に ZIP を保持（失敗時は常に保持）
+- インポートジョブの状態と結果を確認する
+```shell
+$ sail artisan app:import-status --id={job-id}
+```
+
 ## キューワーカー（バックグラウンドジョブ）
 
 エクスポート/インポート機能で必要です。
