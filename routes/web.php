@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\BoxController;
+use App\Http\Controllers\ExportImportController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -32,6 +33,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // Export/Import routes
+    Route::get('/export', [ExportImportController::class, 'index'])->name('export.index');
+    Route::post('/export/start', [ExportImportController::class, 'startExport'])->name('export.start');
+    Route::get('/export/status/{type?}', [ExportImportController::class, 'getStatus'])->name('export.status');
+    Route::get('/export/download/{type?}', [ExportImportController::class, 'download'])->name('export.download');
+    Route::delete('/export/{type?}', [ExportImportController::class, 'delete'])->name('export.delete');
 });
 
 require __DIR__.'/auth.php';

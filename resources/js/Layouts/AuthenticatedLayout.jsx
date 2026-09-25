@@ -25,6 +25,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                 <ul className="menu bg-base-200 text-base-content min-h-full w-80 p-4">
                                     {/* Sidebar content here */}
                                     <li><Link href={route('boxes.index')}>BOX一覧</Link></li>
+                                    <li><Link href={route('export.index')}>データのエクスポート/インポート</Link></li>
                                 </ul>
                             </div>
                         </div>
