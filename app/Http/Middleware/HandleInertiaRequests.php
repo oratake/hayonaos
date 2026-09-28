@@ -45,7 +45,7 @@ class HandleInertiaRequests extends Middleware
      */
     public function handle(Request $request, Closure $next): \Illuminate\Http\Response|\Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
     {
-        if ($request->path() === 'export/status') {
+        if ($request->routeIs('export.status')) {
             return $next($request);
         }
 

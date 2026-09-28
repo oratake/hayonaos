@@ -51,7 +51,7 @@ class ImportUserDataJob implements ShouldQueue
                 throw new \Exception('metadata.json が読めませんでした。');
             }
             $metadata = json_decode($metadataContent, true);
-            if (!is_array($metadata)) {
+            if (!is_array($metadata) || !isset($metadata['boxes']) || !is_array($metadata['boxes'])) {
                 throw new \Exception('metadata.json が無効です。');
             }
 

@@ -1,7 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm, router } from '@inertiajs/react';
 import axios from 'axios';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function ExportImport({ auth, exportJob }) {
     const [status, setStatus] = useState(exportJob ? 'completed' : 'none');
@@ -9,7 +9,6 @@ export default function ExportImport({ auth, exportJob }) {
     const [expiresAt, setExpiresAt] = useState(exportJob ? exportJob.expires_at : null);
     const [exportType, setExportType] = useState('all');
     const [exporting, setExporting] = useState(false);
-    const [uploading, setUploading] = useState(false);
 
     // エクスポートのステータス監視
     useEffect(() => {

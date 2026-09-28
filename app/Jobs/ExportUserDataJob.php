@@ -113,7 +113,9 @@ class ExportUserDataJob implements ShouldQueue
 
             // Move to public storage
             $publicPath = "exports/{$filename}";
-            Storage::disk('public')->put($publicPath, file_get_contents($zipPath));
+            $zipHandle = fopen($zipPath, 'rb');
+            Storage::disk('public')->put($publicPath, $zipHandle);
+            fclose($zipHandle);
             unlink($zipPath);
 
             // Update job record
