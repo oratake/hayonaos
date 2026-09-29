@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -12,6 +13,7 @@ use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Jetstream\HasTeams;
 use Laravel\Sanctum\HasApiTokens;
 use App\Models\Box;
+use App\Models\UserExportJob;
 
 class User extends Authenticatable
 {
@@ -75,5 +77,13 @@ class User extends Authenticatable
     public function boxes(): HasMany
     {
         return $this->hasMany(Box::class);
+    }
+
+    /**
+     * Get the export jobs for the user.
+     */
+    public function exportJobs(): HasMany
+    {
+        return $this->hasMany(UserExportJob::class);
     }
 }
